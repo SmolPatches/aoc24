@@ -31,13 +31,12 @@ fn main() {
     let total: u32 = distances.into_iter().sum();
     println!("Sum: {total}");
     // Day 1 P 2
-    let freq_map: HashMap<Num,usize> = {
+    let similarity_score: usize = {
 	vec1.dedup();
 	vec1.iter().map(|num| {
 	    // for each number in the left list get the amount of times its in right list, then multiply it by num.0
-	    (num.0,num.0 as usize *vec2.iter().filter(|num2| num.0 == num2.0).count())
-	}).collect() // is there a better way to do this? 
+	    num.0 as usize *vec2.iter().filter(|num2| num.0 == num2.0).count()
+	}).sum() // is there a better way to do this? 
     };
-    let similarity_score: usize = freq_map.values().sum();
     println!("Similarity Score: {similarity_score}");
 }
