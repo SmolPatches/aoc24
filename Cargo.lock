@@ -63,6 +63,10 @@ dependencies = [
 [[package]]
 name = "aoc24"
 version = "0.1.0"
+dependencies = [
+ "env_logger",
+ "log",
+]
 
 [[package]]
 name = "colorchoice"
