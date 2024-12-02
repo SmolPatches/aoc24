@@ -1,4 +1,4 @@
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 use std::cmp::Reverse;
 type Num = i32;
 use log::info;
@@ -23,10 +23,21 @@ fn main() {
 	https://github.com/rust-lang/rust/issues/59278
 	https://github.com/rust-lang/rust/issues/76250
     */
-    let distances: Vec<u32> = heap1.into_sorted_vec().into_iter().rev().zip(heap2.into_sorted_vec().into_iter().rev()).map(|(a,b)| {
+    let (mut vec1,vec2) = (heap1.into_sorted_vec(),heap2.into_sorted_vec());
+    let distances: Vec<u32> = vec1.iter().rev().zip(vec2.iter().rev()).map(|(a,b)| {
 	Num::abs_diff(a.0,b.0) // returns u32( because diff ≥ 0 )
     }).collect();
     distances.iter().enumerate().for_each(|(i,v)| info!(target:"Distance Print","Distance {i}: {v}"));
     let total: u32 = distances.into_iter().sum();
     println!("Sum: {total}");
+    // Day 1 P 2
+    let freq_map: HashMap<Num,usize> = {
+	vec1.dedup();
+	vec1.iter().map(|num| {
+	    // for each number in the left list get the amount of times its in right list, then multiply it by num.0
+	    (num.0,num.0 as usize *vec2.iter().filter(|num2| num.0 == num2.0).count())
+	}).collect() // is there a better way to do this? 
+    };
+    let similarity_score: usize = freq_map.values().sum();
+    println!("Similarity Score: {similarity_score}");
 }
