@@ -2,13 +2,13 @@ use env_logger;
 use log::{self, info};
 use regex::Regex;
 type Num = u32;
-struct Op {
+struct MultOps {
     x: Num,
     y: Num,
 }
-impl Op {
-    pub fn new(x: Num, y: Num) -> Op {
-        Op { x, y }
+impl MultOps {
+    pub fn new(x: Num, y: Num) -> MultOps {
+        MultOps { x, y }
     }
     pub fn calc(&self) -> Num {
         self.x * self.y
@@ -17,7 +17,7 @@ impl Op {
 fn part1(input: &str) {
     // capture the digits in a regex
     let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
-    let ops: Vec<Op> = re
+    let ops: Vec<MultOps> = re
         .captures_iter(input)
         .filter_map(|reg_match| {
             // note this will silently fail if parsing fails
@@ -25,10 +25,10 @@ fn part1(input: &str) {
                 reg_match.get(1)?.as_str().parse::<Num>().ok()?,
                 reg_match.get(2)?.as_str().parse::<Num>().ok()?,
             );
-            info!(target:"Operand Filter","{:?}x{:?}",x,y);
+            info!(target:"Operand Filter","{}x{}",x,y);
             Some((x, y))
         })
-        .map(|v| Op::new(v.0, v.1))
+        .map(|v| MultOps::new(v.0, v.1))
         .collect();
     println!(
         "Total: {}",
