@@ -26,9 +26,8 @@ fn part1(input: &str) {
                 reg_match.get(2)?.as_str().parse::<Num>().ok()?,
             );
             info!(target:"Operand Filter","{}x{}",x,y);
-            Some((x, y))
+            Some(MultOps::new(x, y))
         })
-        .map(|v| MultOps::new(v.0, v.1))
         .collect();
     println!(
         "Total: {}",
