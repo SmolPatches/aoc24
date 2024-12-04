@@ -71,11 +71,8 @@ fn part2(input: &str) {
     let ops: Vec<MultOps> = re
         .captures_iter(input)
         .filter_map(|cap| {
-	    let temp_modified = match cap.name("modifier") {
-		Some(m) => m.as_str(),
-		None => "",
-	    };
-            match temp_modified.into() { // if modifier changed and isn't none then update last modified 
+	    let temp_modified = cap.name("modifier").into(); 
+            match temp_modified { // if modifier changed and isn't none then update last modified 
 		Modifier::Dont => last_modifier = Modifier::Dont,
 		Modifier::Do => last_modifier = Modifier::Do,
 		Modifier::None => (),
@@ -84,7 +81,7 @@ fn part2(input: &str) {
                 cap.name("x")?.as_str().parse::<Num>().ok()?,
                 cap.name("y")?.as_str().parse::<Num>().ok()?,
             );
-            info!(target:"part2","Last Mod:{:?}\tCurr Mod:{}\tOperands({x},{y})",last_modifier,temp_modified);
+            info!(target:"part2","Last Mod:{:?}\tCurr Mod:{:?}\tOperands({x},{y})",last_modifier,temp_modified);
             if last_modifier == Modifier::Do {
                 return Some(MultOps::new(x, y));
             }
