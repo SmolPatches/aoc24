@@ -53,11 +53,14 @@ impl From<&str> for Modifier {
         }
     }
 }
-impl<'a> From<Option<Match<'a>>> for Modifier {
-    fn from(val: Option<Match<'a>>) -> Self {
+impl<'a, T> From<Option<T>> for Modifier
+where
+    T: Into<&'a str>,
+{
+    fn from(val: Option<T>) -> Self {
         match val {
+            Some(x) => Modifier::from(x.into()),
             None => Modifier::from(""),
-            Some(x) => Modifier::from(x.as_str()),
         }
     }
 }
