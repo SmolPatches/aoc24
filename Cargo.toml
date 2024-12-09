@@ -15,6 +15,10 @@ path="day2/src/main.rs"
 name="day3"
 path="day3/src/main.rs"
 
+[[bin]]
+name="day4"
+path="day4/src/main.rs"
+
 [dependencies]
 env_logger = "0.11.5"
 log = "0.4.22"
