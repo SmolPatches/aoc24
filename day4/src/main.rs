@@ -1,8 +1,5 @@
-use core::fmt;
 use env_logger;
 use log::info;
-use std::collections::HashSet;
-//use std::collections::HashSet;
 use std::mem;
 use std::ops::Add;
 
@@ -38,17 +35,17 @@ impl Direction {
 impl Add<Offset> for Position {
     type Output = Option<Position>;
     fn add(self, other: Offset) -> Option<Self> {
-        let row = if other.0 < 0 {
-            usize::checked_sub(self.row, other.0.abs() as usize)?
+        let row = self.row as isize + other.0 as isize;
+        let col = self.col as isize + other.1 as isize;
+
+        if row >= 0 && col >= 0 {
+            Some(Self {
+                row: row as usize,
+                col: col as usize,
+            })
         } else {
-            usize::checked_add(self.row, other.0.abs() as usize)?
-        };
-        let col = if other.1 < 0 {
-            usize::checked_sub(self.col, other.1.abs() as usize)?
-        } else {
-            usize::checked_add(self.col, other.1.abs() as usize)?
-        };
-        Some(Self { row, col })
+            None
+        }
     }
 }
 //type Position = (usize, usize);
@@ -67,13 +64,14 @@ impl Position {
 //         write!(f, "({},{})", self.row, self.col)
 //     }
 // }
+static mut recursion_count: usize = 0;
+static mut flag: bool = false;
 type Offset = (i32, i32);
 fn part1(input: &str) {
     // call this on every positon
     // this should return a set of positons( as steps) for each pos to find the match
     // could return none
     let stack: Vec<char> = "XMAS".chars().collect();
-    let stack2: Vec<char> = "SAMX".chars().collect();
     fn string_match_handler(
         pos: Position,
         v: &Vec<Vec<char>>,
@@ -86,10 +84,13 @@ fn part1(input: &str) {
             stack: &[char], // this might need to be a Rope or an Rc since further members might consume a slice
             direction: Direction,
             //pairs: &mut Vec<Position>,
-            pairs: &mut Vec<Position>,
-            // return type should be a hash set of positions (since each position must be unique) in the match
+            pairs: &mut Vec<Position>, // return type should be a hash set of positions (since each position must be unique) in the match
         ) -> Option<Vec<Position>> {
-            if stack.len() == 0 {
+            if !(pos.row < v.len() && pos.col < v.len()) {
+                return None;
+            }
+            let curr_char = v[pos.row][pos.col];
+            if stack.len() == 1 && stack[0] == curr_char {
                 // this means last letter in stack is a match
                 // this is a full match
                 // here we should return all the ordered pairs we discovered
@@ -97,13 +98,6 @@ fn part1(input: &str) {
                 info!(target:"end recursion","found a match:{:?} in {:?}",pairs,direction);
                 return Some(mem::take(pairs));
             }
-            // info!(target:"string_matches","Running on {} w/ Direction: {:?} Looking for {}",pos,direction,stack[0]);
-            // 1. check if stack matches
-            // if stack doesn't match then return None
-            // this is one end condition of the recursion
-            // or check validity in range in the recursive calls below
-            // this if checks to see if dimesions are right returns none other wise
-            let curr_char = *(v.get(pos.row)?.get(pos.col)?);
             if curr_char != stack[0] {
                 info!(
                     "Found {} in ({},{}) was expecting {}",
@@ -111,18 +105,9 @@ fn part1(input: &str) {
                 );
                 return None;
             }
-            // else call again with same direction
-            //NOTE: need some way to track previous positions
-            // pairs vec
-            // info!(
-            // target:"smm",
-            //     "Found {} in {} was expecting {}",
-            //         curr_char, pos, stack[0]
-            //     );
             pairs.push(pos);
-            let pos = (pos + direction.to_offset())?;
+            let pos = direction.to_position(pos)?;
             string_matches(pos, v, &stack[1..], direction, pairs)
-            //string_matches(pos, v, &stack[1..], direction, pairs) // recursion
             // change the position based on direction
             // and call again
         }
@@ -145,8 +130,9 @@ fn part1(input: &str) {
         let set = Vec::from_iter(directions.into_iter().filter_map(|direction| {
             //let mut dir_set = HashSet::new();
             let mut dir_set = Vec::new();
+            //let pos = direction.to_position(pos)?;
             string_matches(
-                direction.to_position(pos)?, // skip negative usize positions
+                pos, // skip negative usize positions
                 &v,
                 &stack,
                 direction,
@@ -172,16 +158,7 @@ fn part1(input: &str) {
             }
         }
     }
-    // for row in 0..xmas_vec.len() {
-    //     for col in 0..xmas_vec.len() {
-    //         let pos_matches = string_match_handler(Position::new(row, col), &xmas_vec, &stack2);
-    //         if let Some(match_set) = pos_matches {
-    //             set.extend(match_set)
-    //         }
-    //     }
-    // }
     set.iter().for_each(|l| info!(target:"set_print","{:?}", l));
-    set.iter().for_each(|l| println!("set_print: {:?}", l));
     println!("total matches:{}", set.len());
 }
 fn main() {
@@ -191,7 +168,7 @@ fn main() {
 #[test]
 fn test4_part1() {
     env_logger::init();
-    part1(include_str!("../files/test"))
+    part1(include_str!("../files/test"));
 }
 
 #[test]
@@ -203,5 +180,11 @@ fn test4_direction() {
     let x = Position { row: 1, col: 0 };
     let y: Offset = (-1, 0);
     assert_ne!(x + y, None);
+    let x = Position { row: 9, col: 9 };
+    let y = x + Direction::LDiagUp.to_offset();
+    assert_eq!(y.unwrap(), Position { row: 8, col: 8 });
+    let x = Position { row: 9, col: 9 };
+    let y = x + Direction::LDiagUp.to_offset();
+    assert_eq!(y.unwrap(), Position { row: 8, col: 8 });
 }
 //.map(|match_vec| HashSet::from_iter(match_vec))
