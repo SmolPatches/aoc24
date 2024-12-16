@@ -15,25 +15,24 @@ fn part1(input: &str) {
                 .push(rhs.parse().ok().unwrap());
         });
     println!("HMAP:{:?}", page_rules);
-    let mut unum = 0 as usize;
     let updates: Vec<Vec<usize>> = i
-        .map(|line| {
-            // im lazy so remember to delete any new lines that come after the update arrays
-            //unum += 1;
-            Vec::from_iter(line.split(",").filter_map(|item| item.parse().ok()))
-        }) // get all the updates from file
-        .filter(|update: &Vec<usize>| {
+        .map(|line| Vec::from_iter(line.split(",").filter_map(|item| item.parse().ok()))) // get all the updates from file
+        .enumerate()
+        .filter(|(line_num, update)| {
             // filter remove bad arrays
             //for each element of update
             //check if curr elm is a key
             //if last elm is inside the mapping for current key then we have bad news
             // stop checking array once we find a rule break
             // return otherwise
+            if update.len() == 0 {
+                return false; // skip empty lines in updates
+            }
             let mut v = update.iter();
             let mut is_valid: bool = true;
             let mut temp = v
                 .next()
-                .expect(format!("Failed on vec: {:?} @ Line: {unum}", update).as_str());
+                .expect(format!("Failed on vec: {:?} @ Line: {line_num}", update).as_str());
             v.for_each(|num| {
                 if matches!(
                     page_rules
@@ -48,6 +47,7 @@ fn part1(input: &str) {
             });
             is_valid
         })
+        .map(|(_, update)| update)
         .collect();
     println!("Updates:{:?}", updates);
     let sum = updates.iter().fold(0, |acc, update| {
