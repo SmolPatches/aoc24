@@ -35,11 +35,10 @@ fn part1(input: &str) {
                 .expect(format!("Failed on vec: {:?} @ Line: {line_num}", update).as_str());
             v.for_each(|num| {
                 if matches!(
-                    page_rules
-                        .get(num)
-                        .and_then(|rules| Some(rules.contains(temp))),
+                    page_rules.get(num).map(|rules| rules.contains(temp)),
                     Some(true)
                 ) {
+                    // if order is wrong
                     is_valid = false;
                     return (); // match page rules violated
                 }
